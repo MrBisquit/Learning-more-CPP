@@ -3,8 +3,43 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
+#include <thread>
+#include <mutex>
 
 using namespace std;
+
+mutex mtx;
+
+void print_sum(int a, int b) { cout << a << " + " << b << " = " << a + b; }
+
+void print_block(int n, char c) {
+    {
+        unique_lock<mutex> locker(mtx);
+        for (int i = 0; i < n; i++)
+        {
+            cout << c;
+        }
+        cout << endl;
+    }
+}
+
+template <typename T>
+T max(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+class Resource {
+public:
+    Resource() { }
+    ~Resource() { }
+};
+
+class MyClass {
+    MyClass();
+    MyClass(const MyClass& other); // Copy constructor
+    MyClass& operator=(const MyClass& other); // Copy assignment operator
+    ~MyClass(); // Deconstructor
+};
 
 int main()
 {
@@ -118,6 +153,34 @@ int main()
     // Print the numbers out
     for (int num : numsm) {
         cout << num << ' ';
+    }
+
+    // Threading
+    cout << endl << "Threading" << endl;
+    
+    thread t(print_sum, 3, 5);
+    t.join();
+
+    cout << endl;
+
+    // Mutex and locks
+    cout << endl << "Threading - Mutex and Locks" << endl;
+
+    thread t1(print_block, 50, '*');
+    thread t2(print_block, 50, '$');
+
+    t1.join();
+    t2.join();
+
+    // Idioms (Resource allocation)
+
+    cout << endl << "Idioms (Resource Allocation)" << endl;
+
+    {
+        Resource r = Resource();
+        cout << "Allocated" << endl;
+        r.~Resource();
+        cout << "Deallocated";
     }
 
     return 0;
